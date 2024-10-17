@@ -1,29 +1,34 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-
-import Root from "./routes/root";
-
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Register from "./components/Register"
+import ResponsiveAppBar from "./components/Header";
+import App from "./App";
+import Login from "./components/Login";
 
 const router = createBrowserRouter([
   {
-    
     path: "/",
-    element: <Root/>,
-  },
+    element: <ResponsiveAppBar />,
+    children: [
+      {
+        path: "/Register",
+        element: <Register />,
+      },
+      {
+        path: "/Login",
 
-  {
-    path : "/login",
-    element : <h1>Login</h1>
-  }
+        element: <Login/>,
+      },
+      {
+        path: "/",
+
+        element: <App />,
+      },
+    ],
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-
-    <RouterProvider router={router} />
-  </React.StrictMode>
+  <RouterProvider router={router} />
 );
