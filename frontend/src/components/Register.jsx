@@ -1,10 +1,19 @@
 import  { useState } from "react";
-import { Button, TextField, Grid, Radio, RadioGroup, FormControlLabel, FormLabel, Avatar, Typography, Box } from "@mui/material";
-import { styled } from "@mui/system";
-
-const Input = styled("input")({
-  display: "none",
-});
+import axios from "axios";
+import { redirect } from "react-router-dom";
+import {
+  TextField,
+  Button,
+  Container,
+  Grid,
+  Typography,
+  Snackbar,
+  Alert,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,119 +21,178 @@ const Register = () => {
     email: "",
     password: "",
     gender: "",
-    photo: null,
+    bio: "",
+    profilePictureUrl: "",
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  const [errorMessage, setErrorMessage] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
 
-  const handleFileChange = (e) => {
-    setFormData({ ...formData, photo: e.target.files[0] });
-  };
+  const { username, email, password, gender, bio, profilePictureUrl } = formData;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const onChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = async (e) => {
     console.log(formData);
+    
+    e.preventDefault();
+    try {
+      // Reset previous errors
+      setFieldErrors({ username: "", email: "", password: "" });
+      setErrorMessage("");
+      const res = await axios.post("http://localhost:5001/api/v1/user/reg", formData);
+      if (res.data.success) {
+        setErrorMessage("User created successfully!");
+        setOpenSnackbar(true);
+        redirect("/login")
+      }
+    } catch (err) {
+      // Handle validation errors and custom errors
+      if (err.response && err.response.data) {
+        const data = err.response.data;
 
-    // You can now send the formData to your backend via API call
-    // For example, using fetch or axios
+        if (data.errors) {
+          // Backend validation errors for specific fields
+          const newFieldErrors = { ...fieldErrors };
+          data.errors.forEach((error) => {
+            newFieldErrors[error.path] = error.msg; // Set error message for each field
+          });
+          setFieldErrors(newFieldErrors);
+        } else if (data.message) {
+          setErrorMessage(data.message);
+          setOpenSnackbar(true);
+        }
+      } else {
+        setErrorMessage("An error occurred. Please try again.");
+        setOpenSnackbar(true);
+      }
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   return (
-    <Box sx={{ maxWidth: 500, mx: "auto", mt: 5 }}>
-      <Typography variant="h4" align="center" gutterBottom>
+    <Container component="main" maxWidth="xs">
+      <Typography component="h1" variant="h5">
         Register
       </Typography>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={onSubmit}>
         <Grid container spacing={2}>
-          {/* Username Field */}
           <Grid item xs={12}>
             <TextField
-              fullWidth
-              label="Username"
               name="username"
               variant="outlined"
-              value={formData.username}
-              onChange={handleChange}
               required
-            />
-          </Grid>
-
-          {/* Email Field */}
-          <Grid item xs={12}>
-            <TextField
               fullWidth
-              label="Email"
-              name="email"
-              type="email"
-              variant="outlined"
-              value={formData.email}
-              onChange={handleChange}
-              required
+              label="Username"
+              value={username}
+              onChange={onChange}
+              error={Boolean(fieldErrors.username)}
+              helperText={fieldErrors.username} 
             />
           </Grid>
-
-          {/* Password Field */}
           <Grid item xs={12}>
             <TextField
+              name="email"
+              variant="outlined"
+              required
+              fullWidth
+              label="Email Address"
+              value={email}
+              onChange={onChange}
+              error={Boolean(fieldErrors.email)}
+              helperText={fieldErrors.email} 
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              name="password"
+              variant="outlined"
+              required
               fullWidth
               label="Password"
-              name="password"
               type="password"
-              variant="outlined"
-              value={formData.password}
-              onChange={handleChange}
-              required
+              value={password}
+              onChange={onChange}
+              error={Boolean(fieldErrors.password)}
+              helperText={fieldErrors.password} 
             />
           </Grid>
 
-          {/* Gender Selection */}
+          {/* Gender Dropdown */}
           <Grid item xs={12}>
-            <FormLabel component="legend">Gender</FormLabel>
-            <RadioGroup
-              row
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-            >
-              <FormControlLabel value="male" control={<Radio />} label="Male" />
-              <FormControlLabel value="female" control={<Radio />} label="Female" />
-            </RadioGroup>
+            <FormControl fullWidth variant="outlined">
+              <InputLabel id="gender-label">Gender</InputLabel>
+              <Select
+                labelId="gender-label"
+                id="gender"
+                name="gender"
+                value={gender}
+                onChange={onChange}
+                label="Gender"
+                required
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value="Male">Male</MenuItem>
+                <MenuItem value="Female">Female</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
 
-          {/* Profile Photo Upload */}
           <Grid item xs={12}>
-            <label htmlFor="photo-upload">
-              <Input
-                accept="image/*"
-                id="photo-upload"
-                type="file"
-                onChange={handleFileChange}
-              />
-              <Button variant="contained" component="span" fullWidth>
-                Upload Profile Photo
-              </Button>
-            </label>
-            {formData.photo && (
-              <Avatar
-                alt="Profile Picture"
-                src={URL.createObjectURL(formData.photo)}
-                sx={{ width: 100, height: 100, mt: 2 }}
-              />
-            )}
+            <TextField
+              name="bio"
+              variant="outlined"
+              fullWidth
+              label="Bio"
+              value={bio}
+              onChange={onChange}
+            />
           </Grid>
-
-          {/* Submit Button */}
           <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              Register
-            </Button>
+            <TextField
+              name="profilePictureUrl"
+              variant="outlined"
+              fullWidth
+              label="Profile Picture URL"
+              value={profilePictureUrl}
+              onChange={onChange}
+            />
           </Grid>
         </Grid>
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          style={{ marginTop: "20px" }}
+        >
+          Register
+        </Button>
       </form>
-    </Box>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: "100%" }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 };
 

@@ -20,6 +20,7 @@ router.post(
     check("password", "Password must be 6 or more characters").isLength({
       min: 6,
     }),
+    check("gender", "Gender is required").not().isEmpty(),
   ],
   createUser
 );

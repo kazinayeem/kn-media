@@ -15,11 +15,23 @@ import AdbIcon from "@mui/icons-material/Adb";
 import { Link, Outlet } from "react-router-dom";
 
 const pages = ["Post", "Friends", "Blog"];
-const settings = ["Profile", "Account", "Login", "Logout", "Register"];
+const settings = ["Profile", "Account", "Logout"]; // Removed Login and Register from settings
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false); // Track login status
+  const [username, setUsername] = React.useState(""); // Store username
+
+  // For demonstration, you can set the login status and username.
+  React.useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (token && user) {
+      setIsLoggedIn(true);
+      setUsername(user.username);
+    }
+  }, []);
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -34,6 +46,15 @@ function ResponsiveAppBar() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const handleLogout = () => {
+    // Clear local storage on logout
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUsername("");
+    handleCloseUserMenu();
   };
 
   return (
@@ -90,8 +111,7 @@ function ResponsiveAppBar() {
                 {pages.map((page) => (
                   <MenuItem key={page} onClick={handleCloseNavMenu}>
                     <Typography sx={{ textAlign: "center" }}>
-                      {" "}
-                      {page} <Link to={page} />
+                      <Link to={page}>{page}</Link>
                     </Typography>
                   </MenuItem>
                 ))}
@@ -123,14 +143,22 @@ function ResponsiveAppBar() {
                   onClick={handleCloseNavMenu}
                   sx={{ my: 2, color: "white", display: "block" }}
                 >
-                  {page}
+                  <Link to={page} style={{ color: 'white', textDecoration: 'none' }}>{page}</Link>
                 </Button>
               ))}
             </Box>
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  {isLoggedIn ? (
+                    username ? (
+                      <Avatar>{username.charAt(0).toUpperCase()}</Avatar> // Show first letter of username
+                    ) : (
+                      <Avatar alt="User" src="/static/images/avatar/2.jpg" />
+                    )
+                  ) : (
+                    <Avatar alt="User" src="/static/images/avatar/2.jpg" />
+                  )}
                 </IconButton>
               </Tooltip>
               <Menu
@@ -149,13 +177,32 @@ function ResponsiveAppBar() {
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography sx={{ textAlign: "center" }}>
-                      <Link to={setting}>{setting}</Link>
-                    </Typography>
-                  </MenuItem>
-                ))}
+                {isLoggedIn ? (
+                  settings.map((setting) => (
+                    <MenuItem key={setting} onClick={setting === "Logout" ? handleLogout : handleCloseUserMenu}>
+                      <Typography sx={{ textAlign: "center" }}>
+                        {setting === "Logout" ? (
+                          <span onClick={handleLogout}>{setting}</span>
+                        ) : (
+                          <Link to={setting}>{setting}</Link>
+                        )}
+                      </Typography>
+                    </MenuItem>
+                  ))
+                ) : (
+                  <>
+                    <MenuItem onClick={handleCloseUserMenu}>
+                      <Typography sx={{ textAlign: "center" }}>
+                        <Link to="/login">Login</Link>
+                      </Typography>
+                    </MenuItem>
+                    <MenuItem onClick={handleCloseUserMenu}>
+                      <Typography sx={{ textAlign: "center" }}>
+                        <Link to="/register">Register</Link>
+                      </Typography>
+                    </MenuItem>
+                  </>
+                )}
               </Menu>
             </Box>
           </Toolbar>
@@ -165,4 +212,5 @@ function ResponsiveAppBar() {
     </React.Fragment>
   );
 }
+
 export default ResponsiveAppBar;

@@ -92,7 +92,9 @@ const createUser = async (req, res, next) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { username, email, password, bio, profilePicture } = req.body;
+  const { username, email, password, bio, profilePictureUrl ,gender} = req.body;
+ 
+  
 
   try {
     // Check if username or email already exists
@@ -108,12 +110,13 @@ const createUser = async (req, res, next) => {
     const newUser = new User({
       username,
       email,
+      gender,
       password: hashedPassword, 
       bio: bio || "",
-      profilePicture: profilePicture || "",
+      profilePictureUrl: profilePictureUrl,
     });
 
-    await newUser.save(); // Save the new user to the database
+    await newUser.save();
 
     res.status(201).json({
       success: true,
@@ -123,7 +126,8 @@ const createUser = async (req, res, next) => {
         username: newUser.username,
         email: newUser.email,
         bio: newUser.bio,
-        profilePicture: newUser.profilePicture,
+        gender : newUser.gender,
+        profilePictureUrl: newUser.profilePictureUrl,
         createdAt: newUser.createdAt,
       },
     });

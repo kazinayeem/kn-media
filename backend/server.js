@@ -1,6 +1,7 @@
 const express = require("express");
 const logger = require("morgan");
 const path = require("path");
+const cors = require("cors");
 const connectDB = require("./config/db");
 const dotenv = require("dotenv");
 const userRoutes = require("./routes/userRoutes");
@@ -9,6 +10,7 @@ dotenv.config();
 
 const app = express();
 app.use(logger("dev"));
+app.use(cors());
 const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

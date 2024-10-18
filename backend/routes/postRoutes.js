@@ -11,7 +11,7 @@ const upload = require('../middleware/uploadMiddleware'); // Multer for file upl
 const router = express.Router();
 
 // Get all posts
-router.get('/',protect, getAllPosts);
+router.get('/', getAllPosts);
 
 // Get post by ID
 router.get('/:id', getPostById);

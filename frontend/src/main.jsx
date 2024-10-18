@@ -1,10 +1,11 @@
-import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Register from "./components/Register"
+import Register from "./components/Register";
 import ResponsiveAppBar from "./components/Header";
 import App from "./App";
 import Login from "./components/Login";
+import Account from "./components/Account";
+import PostPage from "./components/PostPage";
 
 const router = createBrowserRouter([
   {
@@ -18,13 +19,21 @@ const router = createBrowserRouter([
       {
         path: "/Login",
 
-        element: <Login/>,
+        element: <Login />,
       },
       {
         path: "/",
 
         element: <App />,
       },
+      {
+        path: "/account",
+        element: <Account />,
+      },
+      {
+        path : "/Post",
+        element : <PostPage/>
+      }
     ],
   },
 ]);
